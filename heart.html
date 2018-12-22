@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        canvas{
+            border: 3px dotted gold;
+        }
+        .container{
+            width: 100%;
+            display: flex;
+            justify-content: space-evenly;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <canvas id="canvas" width="500px" height="500px"></canvas>
+</div>
+<script>
+
+    const heart = (ctx,x,y,size)=>{
+        const ratio = size==null?1:size/60;
+        y-=ratio*10;
+        ctx.beginPath();
+        ctx.moveTo(x,y-20*ratio);
+        ctx.bezierCurveTo(x,y-23*ratio,x-10*ratio,y-35*ratio,x-25*ratio,y-35*ratio);
+        ctx.bezierCurveTo(x-55*ratio,y-35*ratio,x-55*ratio,y-5*ratio,x-55*ratio,y-5*ratio);
+        ctx.bezierCurveTo(x-55*ratio,y+20*ratio,x-35*ratio,y+42*ratio,x,y+60*ratio);
+        ctx.bezierCurveTo(x+35*ratio,y+42*ratio,x+55*ratio,y+20*ratio,x+55*ratio,y-5*ratio);
+        ctx.bezierCurveTo(x+55*ratio,y-5*ratio,x+55*ratio,y-35*ratio,x+25*ratio,y-35*ratio);
+        ctx.bezierCurveTo(x+10*ratio,y-35*ratio,x,y-23*ratio,x,y-20*ratio);
+        ctx.fill();
+    }
+    // Path2D 相对路径版
+    // const heart = (ctx,x,y,size)=>{
+    //     const ratio = size==null?1:size/60;
+    //     ctx.fill(new Path2D(`M${x} ${y-30*ratio} c0 ${-3*ratio} ${-10*ratio} ${-15*ratio} ${-25*ratio} ${-15*ratio} color ${-30*ratio} 0 ${-30*ratio} ${30*ratio} ${-30*ratio} ${30*ratio} c0 ${25*ratio} ${20*ratio} ${47*ratio} ${55*ratio} ${65*ratio} color ${35*ratio} ${-18*ratio} ${55*ratio} ${-40*ratio} ${55*ratio} ${-65*ratio} c0 0 0 ${-30*ratio} ${-30*ratio} ${-30*ratio} color ${-15*ratio} 0 ${-25*ratio} ${12*ratio} ${-25*ratio} ${15*ratio} Z`));
+    // }
+
+    let canvas = document.getElementById('canvas');
+    if (canvas.getContext) {
+        let ctx = canvas.getContext('2d');
+        heart(ctx,250,250,25);
+    }
+</script>
+</body>
+</html>

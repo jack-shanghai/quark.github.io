@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        canvas{
+            border: 3px dotted gold;
+            border-radius: 10px;
+        }
+        .container{
+            width: 100%;
+            display: flex;
+            justify-content: space-evenly;
+            flex-wrap: wrap;
+        }
+        .source,.frame{
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <img src="../imgs/hero.png" class="source">
+    <img src="../imgs/enemy.png" class="source">
+    <img src="../imgs/bullet.png" class="source">
+    <img src="../imgs/guan.jpg" class="source">
+    <img id="frame" src="../imgs/bullet.png" class="frame">
+</div>
+<script>
+    function draw() {
+        
+        // Loop through all images
+        for (let i = 0; i < document.images.length - 1; i++) {
+
+            // Don't add a canvas for the frame image
+            // Create canvas element
+            let canvas = document.createElement('CANVAS');
+            canvas.setAttribute('width', 200);
+            canvas.setAttribute('height', 300);
+
+            // Insert before the image
+
+            let ctx = canvas.getContext('2d');
+
+            ctx.shadowOffsetX = 2;
+            ctx.shadowOffsetY = 2;
+            ctx.shadowBlur = 2;
+            ctx.shadowColor = "rgba(0, 0, 0, 0.5)";
+
+            ctx.font = "20px Times New Roman";
+            ctx.fillStyle = "Black";
+            ctx.fillText("Sample String", 5, 30);
+
+            // Add frame
+            document.querySelector("#frame").onload = function () {
+                ctx.drawImage(document.getElementById('frame'), 0, 0, 200, 300);
+                console.info("frame" + i);
+
+            };
+            document.images[i].onload = function () {
+                ctx.drawImage(document.images[i], 30, 30, 140, 240);
+                console.info("source" + i);
+            }
+
+            document.images[i].parentNode.insertBefore(canvas, document.images[i]);
+        }
+
+    }
+    console.info(document.images)
+    setTimeout(draw,500);
+</script>
+</body>
+</html>

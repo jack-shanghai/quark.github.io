@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        canvas{
+            /*border: 3px dotted gold;*/
+        }
+        .container{
+            width: 100%;
+            display: flex;
+            justify-content: space-evenly;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <canvas id="canvas" width="500px" height="500px"></canvas>
+</div>
+<script type="module">
+import {Shape,Box} from "./ball2.js";
+// let shapes = [
+//     new Shape(250,250,100,{vx:1,vy:2,vz:3,color:'red'}),
+//     new Shape(100,50,150,{vx:1,vy:3,vz:2,color:'green'}),
+//     new Shape(50,100,150,{vx:2,vy:3,vz:2,color:'blue'}),
+//     new Shape(100,150,50,{vx:3,vy:3,vz:2,color:'purple'}),
+//     new Shape(50,150,100,{vx:4,vy:3,vz:2,color:'gold'}),
+//     new Shape(150,50,100,{vx:5,vy:3,vz:2,color:'pink'}),
+//     new Shape(150,100,50,{vx:6,vy:3,vz:2,color:'gray'}),
+//     new Shape(250,100,250,{vx:3,vy:2,vz:1,color:'yellow'}),
+//     new Shape(100,50,50,{vx:1,vy:3,vz:2,color:'brown'}),
+//     new Shape(50,100,50,{vx:2,vy:1,vz:3})
+// ];
+let shapes = [
+    new Shape([250,250,100],[1,2,3],{color:'red'}),
+    new Shape([100,50,150],[1,3,2],{color:'green'}),
+    new Shape([50,100,150],[2,3,1],{color:'blue'}),
+    new Shape([100,150,50],[2,1,3],{color:'purple'}),
+    new Shape([50,150,100],[3,1,2],{color:'gold'}),
+    new Shape([150,50,100],[3.,2,1],{color:'pink'}),
+    new Shape([150,100,50],[2,2,3],{color:'gray'}),
+    new Shape([250,100,250],[-1,2,3],{color:'yellow'}),
+    new Shape([100,50,50],[1,-2,3],{color:'brown'}),
+    new Shape([50,100,50],[1,2,-3])
+];
+let box = new Box('canvas');
+const draw = ()=>{
+    box.clearOld(box.offscreenContext);
+    for(let i = 0;i<shapes.length;i++){
+        for (let j = i+1;j<shapes.length;j++){
+            shapes[i].collision(shapes[j]);
+        }
+    }
+    shapes.sort(
+        (a,b)=> b.pz-a.pz
+    )
+    shapes.map(
+        (item)=> item.draw(box)
+    )
+    box.render();
+    requestAnimationFrame(draw);
+}
+draw();
+</script>
+</body>
+</html>

@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        *{
+            border: 1px solid black;
+        }
+        .container{
+            display: flex;
+            justify-content: space-evenly;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <canvas id="canvas" width="1000" height="600"></canvas>
+</div>
+<script>
+    const radius = 25;//小球半径
+    let n = 10;//小球数量
+
+    let canvas = document.getElementById('canvas');
+    let ctx = canvas.getContext('2d');
+    let raf;
+
+    //初始位置和速度
+    let px=[0,100,500,200,300,400,500,600,700,800];
+    let py=[0,200,300,200,400,100,150,250,500,50];
+    let vx = [1,2,3,4,5,6,7,8,9,10];
+    let vy = [10,9,8,7,6,5,4,3,2,1];
+    let angle = [0,1,2,3,4,5,6,7,8,9];
+    let status = [false,false,false,false,false,false,false,false,false,false];
+    let dark = [0,0,0,0,0,0,0,0,0,0];
+
+
+
+    const five_pointed_star = (ctx,x,y,ra,rb,angle)=>{
+        const pi = Math.PI;
+        ctx.beginPath();
+        ctx.moveTo(x+ra*Math.cos(angle),y+ra*Math.sin(angle));
+        for(let i=1;i<=9;i=i+2){
+            ctx.lineTo(x+rb*Math.cos(angle+pi/5*i),y+rb*Math.sin(angle+pi/5*i));
+            ctx.lineTo(x+ra*Math.cos(angle+pi/5*(i+1)),y+ra*Math.sin(angle+pi/5*(i+1)))
+        }
+        ctx.fill();
+    }
+    const heart = (ctx,x,y,size)=>{
+        const ratio = size==null?1:size/60;
+        y-=ratio*-10;
+        ctx.beginPath();
+        ctx.moveTo(x,y-20*ratio);
+        ctx.bezierCurveTo(x,y-23*ratio,x-10*ratio,y-35*ratio,x-25*ratio,y-35*ratio);
+        ctx.bezierCurveTo(x-55*ratio,y-35*ratio,x-55*ratio,y-5*ratio,x-55*ratio,y-5*ratio);
+        ctx.bezierCurveTo(x-55*ratio,y+20*ratio,x-35*ratio,y+42*ratio,x,y+60*ratio);
+        ctx.bezierCurveTo(x+35*ratio,y+42*ratio,x+55*ratio,y+20*ratio,x+55*ratio,y-5*ratio);
+        ctx.bezierCurveTo(x+55*ratio,y-5*ratio,x+55*ratio,y-35*ratio,x+25*ratio,y-35*ratio);
+        ctx.bezierCurveTo(x+10*ratio,y-35*ratio,x,y-23*ratio,x,y-20*ratio);
+        ctx.fill();
+    }
+
+    function draw() {
+
+        const w = canvas.width;
+        const h = canvas.height;
+        ctx.clearRect(0,0, w, h);
+
+        function drawCircle(x,y,f,a) {
+            ctx.beginPath();
+            // ctx.arc(x, y, radius, 0, Math.PI * 2, true);
+            // five_pointed_star(ctx,x,y,radius,radius/2,Math.PI*a/25);
+            heart(ctx,x,y,radius);
+            ctx.closePath();
+
+            // let deviationY = (i)=> (2*i/h-1)*15
+            // let deviationY = (i)=> (2*i/w-1)*15
+
+            //渐进附色很影响性能
+            // let radgrad = ctx.createRadialGradient(x-5,y-5,10,x,y,radius);
+            // if(!f){
+            //     radgrad.addColorStop(0, '#A7D30C');
+            //     radgrad.addColorStop(0.9, '#019F62');
+            //     radgrad.addColorStop(1, 'rgba(1,159,98,0)');
+            // }else {
+            //     radgrad.addColorStop(0, '#FF5F98');
+            //     radgrad.addColorStop(0.75, '#FF0188');
+            //     radgrad.addColorStop(1, 'rgba(255,1,136,0)');
+            // }
+            // ctx.fillStyle = radgrad;
+
+            //ctx.fillStyle = f?"pink":"red";
+
+            a = 255*(1-a/100);
+            ctx.fillStyle = `rgba(${a},0,0,0.7)`;
+            ctx.fill();
+        }
+        for(let i = 0;i<n;i++){
+            px[i]+=vx[i];
+            py[i]+=vy[i];
+
+            if (px[i] > w-radius) {
+                vx[i] = -vx[i];
+                px[i] = 2*(w-radius)-px[i];
+            }
+            if (px[i] < radius){
+                vx[i] = -vx[i];
+                px[i] = 2*(radius)-px[i];
+            }
+
+            if (py[i] > h - radius || py[i] < 0) {
+                vy[i] = -vy[i];
+                py[i] = 2*(h-radius)-py[i];
+            }
+            if (py[i] < radius){
+                vy[i] = -vy[i];
+                py[i] = 2*(radius)-py[i];
+            }
+
+            drawCircle(px[i],py[i],status[i],dark[i]);
+        }
+        for(let i = 0;i<n;i++){
+            for(let j = i+1;j<n;j++){
+                let dx=px[i]-px[j];
+                let dy=py[i]-py[j];
+                let distance = Math.pow((Math.pow(dx,2)+Math.pow(dy,2)),0.5);
+                if(distance<2*radius){
+                    // debugger;
+                    let vx1=vx[i];
+                    let vy1=vy[i];
+                    let vx2=vx[j];
+                    let vy2=vy[j];
+                    //发生碰撞后的时间
+                    let t = (50-distance)/Math.sqrt(Math.pow(vx1-vx2,2)+Math.pow(vy1-vy2,2))
+                    //把球的位置还原到碰撞时
+                    px[i]=px[i]-vx1*t;
+                    py[i]=py[i]-vy1*t;
+                    px[j]=px[j]-vx2*t;
+                    py[j]=py[j]-vx2*t;
+                    dx=px[i]-px[j];
+                    dy=py[i]-py[j];
+                    let k = ((vx1-vx2)*dx+(vy1-vy2)*dy)/(Math.pow(dx,2)+Math.pow(dy,2));
+                    //碰撞后的速度
+                    vx[i]=vx1-k*dx;
+                    vy[i]=vy1-k*dy;
+                    vx[j]=vx2+k*dx;
+                    vy[j]=vy2+k*dy;
+                    //碰撞后t时间，球的位置
+                    px[i]=Math.floor(px[i]+vx[i]*t);
+                    py[i]=Math.floor(py[i]+vy[i]*t);
+                    px[j]=Math.floor(px[j]+vx[j]*t);
+                    py[j]=Math.floor(py[j]+vy[j]*t);
+
+                    //状态处理
+                    // status[i] = status[i]||status[j];
+                    // status[j] = status[i]||status[j];
+
+                    //越撞越黑
+                    // if(dark[i]>dark[j]){
+                    //     dark[j] = dark[i];
+                    // }else {
+                    //     dark[i] = dark[j];
+                    // }
+
+                    dark[i]= dark[i]<100?dark[i]+5:100;
+                    dark[j]= dark[j]<100?dark[j]+5:100;
+                }
+            }
+        }
+        raf = window.requestAnimationFrame(draw);
+    }
+
+    canvas.addEventListener('mouseover', function(e){
+        raf = window.requestAnimationFrame(draw);
+    });
+
+    canvas.addEventListener('mouseout', function(e){
+        window.cancelAnimationFrame(raf);
+    });
+
+    canvas.addEventListener('click', function(e){
+        let off_x = canvas.offsetLeft;
+        let off_y = canvas.offsetTop;
+        addBall(e.clientX-off_x,e.clientY-off_y);
+    });
+
+    function addBall(x,y) {
+        n +=1;
+        px.push(x);
+        py.push(y);
+        vx.push(0);
+        vy.push(0);
+        angle.push(Math.random()*10);
+        dark.push(0);
+        status.push(true);
+    }
+
+</script>
+</body>
+</html>

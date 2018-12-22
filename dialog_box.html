@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        canvas{
+            border: 3px dotted gold;
+        }
+        .container{
+            width: 100%;
+            display: flex;
+            justify-content: space-evenly;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <canvas id="canvas" width="500px" height="500px"></canvas>
+</div>
+<script>
+    function draw() {
+        let canvas = document.getElementById('canvas');
+        if (canvas.getContext) {
+            let ctx = canvas.getContext('2d');
+
+            // 二次贝塞尔曲线
+            ctx.beginPath();
+            ctx.moveTo(75,25);
+            ctx.quadraticCurveTo(25,25,25,62.5);
+            ctx.quadraticCurveTo(25,100,50,100);
+            ctx.quadraticCurveTo(50,120,30,125);
+            ctx.quadraticCurveTo(60,120,65,100);
+            ctx.quadraticCurveTo(125,100,125,62.5);
+            ctx.quadraticCurveTo(125,25,75,25);
+            ctx.stroke();
+        }
+    }
+
+    // //渐变色
+    // function draw() {
+    //     const n = 100;
+    //     let ctx = document.getElementById('canvas').getContext('2d');
+    //     for (let i=0;i<n;i++){
+    //         for (let j=0;j<n;j++){
+    //             let red = Math.floor(255-255/n*i);
+    //             let green = Math.floor(255-255/n*j);
+    //             ctx.fillStyle = `rgb(${red},${green},0)`;
+    //             ctx.fillRect(j*500/n,i*500/n,500/n,500/n);
+    //         }
+    //     }
+    // }
+    draw()
+</script>
+</body>
+</html>

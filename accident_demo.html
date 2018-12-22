@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        *{
+            border: 1px solid black;
+        }
+        .container{
+            display: flex;
+            justify-content: space-evenly;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <canvas id="canvas" width="1000" height="600"></canvas>
+</div>
+<script>
+    const radius = 25;//小球半径
+    let n = 10;//小球数量
+
+    let canvas = document.getElementById('canvas');
+    let ctx = canvas.getContext('2d');
+    let raf;
+
+    let px=[500,800];
+    let py=[430,300];
+    let vx = [0,-5];
+    let vy = [-2.5,0];
+    let angle = [0,1];
+    let status = [false,false];
+    let dark = [0,0];
+    let isCollision = false;
+    const heart = (ctx,x,y,size)=>{
+        const ratio = size==null?1:size/60;
+        y-=ratio*-10;
+        ctx.beginPath();
+        ctx.moveTo(x,y-20*ratio);
+        ctx.bezierCurveTo(x,y-23*ratio,x-10*ratio,y-35*ratio,x-25*ratio,y-35*ratio);
+        ctx.bezierCurveTo(x-55*ratio,y-35*ratio,x-55*ratio,y-5*ratio,x-55*ratio,y-5*ratio);
+        ctx.bezierCurveTo(x-55*ratio,y+20*ratio,x-35*ratio,y+42*ratio,x,y+60*ratio);
+        ctx.bezierCurveTo(x+35*ratio,y+42*ratio,x+55*ratio,y+20*ratio,x+55*ratio,y-5*ratio);
+        ctx.bezierCurveTo(x+55*ratio,y-5*ratio,x+55*ratio,y-35*ratio,x+25*ratio,y-35*ratio);
+        ctx.bezierCurveTo(x+10*ratio,y-35*ratio,x,y-23*ratio,x,y-20*ratio);
+        ctx.fill();
+    }
+
+    function clear() {
+        ctx.fillStyle = 'rgba(255,255,255,0.2)';
+        ctx.fillRect(0,0,canvas.width,canvas.height);
+    }
+    function draw() {
+
+        clear()
+        const w = canvas.width;
+        const h = canvas.height;
+        // ctx.clearRect(0,0, w, h);
+
+        function drawCircle(x,y,f,a) {
+            ctx.beginPath();
+            ctx.arc(x, y, radius, 0, Math.PI * 2, true);
+            ctx.closePath();
+            ctx.fillStyle = `#12c2e9`;
+            ctx.fill();
+        }
+        isCollision?slow_down():null;
+        for(let i = 0;i<n;i++){
+            px[i]+=vx[i];
+            py[i]+=vy[i];
+
+            if (px[i] > w-radius) {
+                vx[i] = -vx[i];
+                px[i] = 2*(w-radius)-px[i];
+            }
+            if (px[i] < radius){
+                vx[i] = -vx[i];
+                px[i] = 2*(radius)-px[i];
+            }
+
+            if (py[i] > h - radius || py[i] < 0) {
+                vy[i] = -vy[i];
+                py[i] = 2*(h-radius)-py[i];
+            }
+            if (py[i] < radius){
+                vy[i] = -vy[i];
+                py[i] = 2*(radius)-py[i];
+            }
+
+            drawCircle(px[i],py[i],status[i],dark[i]);
+        }
+        for(let i = 0;i<n;i++){
+            for(let j = i+1;j<n;j++){
+                let dx=px[i]-px[j];
+                let dy=py[i]-py[j];
+                let distance = Math.pow((Math.pow(dx,2)+Math.pow(dy,2)),0.5);
+                if(distance<2*radius){
+                    isCollision = true;
+                    // debugger;
+                    let vx1=vx[i];
+                    let vy1=vy[i];
+                    let vx2=vx[j];
+                    let vy2=vy[j];
+                    //发生碰撞后的时间
+                    let t = (50-distance)/Math.sqrt(Math.pow(vx1-vx2,2)+Math.pow(vy1-vy2,2))
+                    //把球的位置还原到碰撞时
+                    px[i]=px[i]-vx1*t;
+                    py[i]=py[i]-vy1*t;
+                    px[j]=px[j]-vx2*t;
+                    py[j]=py[j]-vx2*t;
+                    dx=px[i]-px[j];
+                    dy=py[i]-py[j];
+                    let k = ((vx1-vx2)*dx+(vy1-vy2)*dy)/(Math.pow(dx,2)+Math.pow(dy,2));
+                    //碰撞后的速度
+                    vx[i]=vx1-k*dx;
+                    vy[i]=vy1-k*dy;
+                    vx[j]=vx2+k*dx;
+                    vy[j]=vy2+k*dy;
+                    //碰撞后t时间，球的位置
+                    px[i]=Math.floor(px[i]+vx[i]*t);
+                    py[i]=Math.floor(py[i]+vy[i]*t);
+                    px[j]=Math.floor(px[j]+vx[j]*t);
+                    py[j]=Math.floor(py[j]+vy[j]*t);
+
+                    //状态处理
+                    // status[i] = status[i]||status[j];
+                    // status[j] = status[i]||status[j];
+
+                    //越撞越黑
+                    // if(dark[i]>dark[j]){
+                    //     dark[j] = dark[i];
+                    // }else {
+                    //     dark[i] = dark[j];
+                    // }
+
+                    dark[i]= dark[i]<100?dark[i]+5:100;
+                    dark[j]= dark[j]<100?dark[j]+5:100;
+                }
+            }
+        }
+        raf = window.requestAnimationFrame(draw);
+    }
+
+    function slow_down(){
+        function rub(y) {
+            let dv = 0.2;
+            if (y>dv){
+                y-=dv;
+            }
+            if (y<-dv){
+                y+=dv;
+            }
+            if (Math.abs(y)<=dv){
+                y = 0;
+            }
+            return y;
+        }
+        for(let i of vx.keys()){
+            vx[i] = rub(vx[i]);
+        }
+        for(let i of vy.keys()){
+            vy[i] = rub(vy[i]);
+        }
+    }
+    canvas.addEventListener('mouseover', function(e){
+        raf = window.requestAnimationFrame(draw);
+    });
+
+    canvas.addEventListener('mouseout', function(e){
+        window.cancelAnimationFrame(raf);
+    });
+
+    canvas.addEventListener('click', function(e){
+        let off_x = canvas.offsetLeft;
+        let off_y = canvas.offsetTop;
+        addBall(e.clientX-off_x,e.clientY-off_y);
+    });
+
+    function addBall(x,y) {
+        n +=1;
+        px.push(x);
+        py.push(y);
+        vx.push(0);
+        vy.push(0);
+        angle.push(Math.random()*10);
+        dark.push(0);
+        status.push(true);
+    }
+
+</script>
+</body>
+</html>

@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        *{
+            border: 1px solid black;
+        }
+        .container{
+            display: flex;
+            justify-content: space-evenly;
+        }
+    </style>
+
+</head>
+<body>
+<div class="container">
+    <canvas id="canvas" width="1000" height="500"></canvas>
+</div>
+<script>
+    let canvas = document.getElementById('canvas');
+    let ctx = canvas.getContext('2d');
+    let raf;
+    let running = false;
+
+    let img = new Image();
+    img.src = 'https://mdn.mozillademos.org/files/222/Canvas_createpattern.png';
+    img.onload = function() {
+
+        // 创建图案
+        ptrn = ctx.createPattern(img, 'repeat');
+        ctx.fillStyle = ptrn||"orange";
+        console.info(ptrn);
+    }
+
+    function createBall(px,py){
+        let ball = {
+            x: px,
+            y: py,
+            vx: 2,
+            vy: 3,
+            radius: 25,
+            color: 'orange',
+            draw: function() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, true);
+                ctx.closePath();
+                ctx.fillStyle = ptrn;
+
+                ctx.fill();
+            }
+        };
+        return ball
+    }
+
+    let balls = [];
+
+    function clear() {
+        ctx.fillStyle = 'rgba(255,255,255,0.1)';
+        ctx.fillRect(0,0,canvas.width,canvas.height);
+    }
+
+    const random_color =()=>{
+        let get_num = ()=>Math.floor(Math.random()*256);
+        let red = get_num();
+        let green = get_num();
+        let blue = get_num();
+        let alpha = get_num();
+        return `rgba(${red},${green},${blue},${alpha})`;
+    }
+    function play() {
+        clear();
+        for(let i in balls){
+            balls[i].draw();
+            balls[i].x += balls[i].vx;
+            balls[i].y += balls[i].vy;
+
+            if (balls[i].y + balls[i].vy > canvas.height || balls[i].y + balls[i].vy < 0) {
+                balls[i].vy = -balls[i].vy;
+            }
+            if (balls[i].x + balls[i].vx > canvas.width || balls[i].x + balls[i].vx < 0) {
+                balls[i].vx = -balls[i].vx;
+            }
+        }
+
+        for(let i = 0;i<balls.length;i++){
+            for(let j = i+1;j<balls.length;j++){
+                let dx=balls[i].x-balls[j].x;
+                let dy=balls[i].y-balls[j].y;
+                let distance = Math.pow((Math.pow(dx,2)+Math.pow(dy,2)),0.5);
+                if(distance<2*balls[0].radius){
+                    // debugger;
+                    let vx1=balls[i].vx;
+                    let vy1=balls[i].vy;
+                    let vx2=balls[j].vx;
+                    let vy2=balls[j].vy;
+                    //发生碰撞后的时间
+                    let t = (50-distance)/Math.sqrt(Math.pow(vx1-vx2,2)+Math.pow(vy1-vy2,2))
+                    //把球的位置还原到碰撞时
+                    balls[i].x-=vx1*t;
+                    balls[i].y-=vy1*t;
+                    balls[j].x-=vx2*t;
+                    balls[j].y-=vy2*t;
+                    dx=balls[i].x-balls[j].x;
+                    dy=balls[i].y-balls[j].y;
+                    let k = ((vx1-vx2)*dx+(vy1-vy2)*dy)/(Math.pow(dx,2)+Math.pow(dy,2));
+                    //碰撞后的速度
+                    balls[i].vx=vx1-k*dx;
+                    balls[i].vy=vy1-k*dy;
+                    balls[j].vx=vx2+k*dx;
+                    balls[j].vy=vy2+k*dy;
+                    //碰撞后t时间，球的位置
+                    balls[i].x=Math.floor(balls[i].x+balls[i].vx*t);
+                    balls[i].y=Math.floor(balls[i].y+balls[i].vy*t);
+                    balls[j].x=Math.floor(balls[j].x+balls[j].vx*t);
+                    balls[j].y=Math.floor(balls[j].y+balls[j].vy*t);
+
+                    balls[i].color = random_color();
+                    balls[j].color = random_color();
+                }
+            }
+        }
+        raf = window.requestAnimationFrame(play);
+    }
+    let ball = null;
+    canvas.addEventListener('mouseenter', function(e){
+        ball = createBall();
+    });
+    let dx = canvas.offsetLeft;
+    let dy = canvas.offsetTop;
+    canvas.addEventListener('mousemove', function(e){
+        if (!running) {
+            clear();
+
+            ball.x = e.clientX-dx;
+            ball.y = e.clientY-dy;
+            ball.draw();
+        }
+    });
+
+    canvas.addEventListener('click',function(e){
+        let ball = createBall(e.clientX-dx,e.clientY-dy);
+        balls.push(ball);
+        if(!raf){
+            raf = window.requestAnimationFrame(play);
+        }
+        running = true;
+    });
+
+    // canvas.addEventListener('mouseout', function(e){
+    //     window.cancelAnimationFrame(raf);
+    //     running = false;
+    // });
+</script>
+</body>
+</html>

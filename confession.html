@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        body{
+            background: linear-gradient(whitesmoke, lightseagreen);
+            font-family: "Helvetica Neue", "Luxi Sans", "DejaVu Sans", Tahoma, "Hiragino Sans GB", "Microsoft Yahei", sans-serif;
+        }
+        canvas{
+            border: 3px dotted gold;
+        }
+        .container{
+            width: 100%;
+            display: flex;
+            justify-content: space-evenly;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <canvas id="canvas" width="1000px" height="500px"></canvas>
+</div>
+<script language="javascript">
+    // function show_date_time() {
+    //     let theFirstDay = new Date("9/24/2018");//认识彼此的日子
+    //     let today = new Date();
+    //     let msPerDay = 24 * 60 * 60 * 1000
+    //     let sumDay = Math.floor((today.getTime() - theFirstDay.getTime()) / msPerDay);
+    //     // document.querySelector("#sumDay").innerHTML = `这是我们相识的第 ${sumDay} 天`;
+    // }
+    // show_date_time();
+</script>
+<script>
+
+    let string = "顾安傻瓜";
+    const getColor = ()=> {
+        const getRandom = ()=> Math.floor(256*Math.random());
+        const getAlpha = ()=> 0.4+0.6*Math.random();
+        return `rgba(${getRandom()},${getRandom()},${getRandom()},1)`;
+    }
+    class dot{
+        constructor(x,y,radius,color){
+            this.px = x;
+            this.py = y;
+            this.radius = radius||10;
+            this.color = color||getColor()||"white";
+        }
+    }
+
+    const heart = (ctx,x,y,size)=>{
+        const ratio = size==null?1:size/60;
+        ctx.fill(new Path2D(`M${x} ${y-30*ratio} c0 ${-3*ratio} ${-10*ratio} ${-15*ratio} ${-25*ratio} ${-15*ratio} c ${-30*ratio} 0 ${-30*ratio} ${30*ratio} ${-30*ratio} ${30*ratio} c0 ${25*ratio} ${20*ratio} ${47*ratio} ${55*ratio} ${65*ratio} c ${35*ratio} ${-18*ratio} ${55*ratio} ${-40*ratio} ${55*ratio} ${-65*ratio} c0 0 0 ${-30*ratio} ${-30*ratio} ${-30*ratio} c ${-15*ratio} 0 ${-25*ratio} ${12*ratio} ${-25*ratio} ${15*ratio} Z`));
+    }
+
+    let canvas = document.getElementById("canvas");
+    let ctx = canvas.getContext("2d");
+
+    function ajustCanvas(){
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+    let w = canvas.width;
+    let h = canvas.height;
+    let gap = 15;
+    let offScreenCanvas = document.createElement("canvas");
+    function ajustOffScreenCanvas(){
+        offScreenCanvas.width = canvas.width;
+        offScreenCanvas.height = canvas.height;
+    }
+    ajustOffScreenCanvas();
+    let offScreenContext = offScreenCanvas.getContext("2d");
+
+    offScreenContext.font = "900 300px nan-serif";
+    offScreenContext.textAlign = "center";
+    offScreenContext.textBaseline = "middle";
+    // offScreenContext.translate();
+
+
+    function draw(){
+        let today = new Date();
+        let time = null;
+        if (today.getMinutes()>=10) {
+            time = `${today.getHours()}:${today.getMinutes()}`;
+        }else {
+            time = `${today.getHours()}:0${today.getMinutes()}`;
+        }
+        offScreenContext.clearRect(0,0,w,h);
+        offScreenContext.fillText(string,offScreenCanvas.width/2,offScreenCanvas.height/2);
+
+        let imageData = offScreenContext.getImageData(0, 0, w, h);
+        let dada = imageData.data;
+        let dots = [];
+        for (let i=0;i<h;i+=gap){
+            for (let j=0;j<w;j+=Math.floor(gap/2)){
+                if(dada[4*(i*w+j)+3]>0){
+                    dots.push(new dot(j,i,gap/2));
+                }
+            }
+        }
+        offScreenContext.clearRect(0,0,w,h);
+        for (let i = 0;i<dots.length;i++){
+            offScreenContext.beginPath();
+            // offScreenContext.arc(dots[i].px+Math.random()-0.5,dots[i].py+Math.random()-0.5,dots[i].radius,0,2*Math.PI,true);
+            heart(offScreenContext,dots[i].px+Math.random()-0.5,dots[i].py+Math.random()-0.5,dots[i].radius);
+            offScreenContext.fillStyle = dots[i].color;
+            offScreenContext.fill();
+        }
+        ctx.clearRect(0,0,w,h);
+        ctx.drawImage(offScreenCanvas,0,0);
+        window.requestAnimationFrame(draw);
+    }
+    draw();
+
+
+</script>
+</body>
+</html>

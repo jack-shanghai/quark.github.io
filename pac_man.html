@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        canvas{
+            border: 3px dotted gold;
+        }
+        .container{
+            width: 100%;
+            display: flex;
+            justify-content: space-evenly;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <canvas id="canvas" width="1000px" height="500px"></canvas>
+</div>
+<script>
+    let position = [250,250,0,1.01];
+    let steps = 0;
+    const velocity = 3;
+    const radius = 50;
+    const pi = Math.PI;
+    const directions = [0,pi/2,pi,1.5*pi]
+
+    //控制吃豆人移动
+    document.onkeydown = function (e) {
+        switch (e.key) {
+            case "ArrowLeft":{
+                position[0]-=velocity;
+                position[2]=2;
+            }break;
+            case "ArrowRight":{
+                position[0]+=velocity;
+                position[2]=0;
+            };break;
+            case "ArrowUp":{
+                position[1]-=velocity;
+                position[2]=3;
+            };break;
+            case "ArrowDown":{
+                position[1]+=velocity;
+                position[2]=1;
+            };break;
+        }
+        if(parseInt(steps/10)%2==0){
+            position[3]-=0.1
+        }else {
+            position[3]+=0.1
+        }
+        // if(e.key=="ArrowLeft"){
+        //     position[0]-=velocity;
+        // }
+        // else if(e.key=="ArrowRight"){
+        //     position[0]+=5;
+        // }
+        // else if(e.key=="ArrowUp"){
+        //     position[1]-=5;
+        // }
+        // else if(e.key=="ArrowDown"){
+        //     position[1]+=5;
+        // }
+
+        console.info(e.key,position);
+        steps+=1;
+    }
+    const pac_man = (ctx,x,y,dn,open_degree)=>{
+        dn = dn||0;
+        open_degree = open_degree||1;
+        ctx.beginPath();
+        ctx.arc(x,y,radius,open_degree*pi/5+directions[dn],-open_degree*pi/5+directions[dn],false);
+        switch (dn) {
+            case 0:ctx.lineTo(x-radius/3,y);break;
+            case 1:ctx.lineTo(x,y-radius/3);break;
+            case 2:ctx.lineTo(x+radius/3,y);break;
+            case 3:ctx.lineTo(x,y+radius/3);break;
+        }
+        ctx.fillStyle = "orange";
+        ctx.fill();
+    }
+    let move_step = 0;
+    let t = 0;
+    const move = ()=>{
+        t+=1;
+        move_step = Math.cos(2*pi*t/30)/2;
+        window.requestAnimationFrame(move);
+    }
+    move();
+    const enemy = (ctx,x,y,r,dx)=>{
+        const a = -20*r/100;
+
+        ctx.beginPath();
+        //外轮廓
+        ctx.fillStyle = "orange";
+        ctx.moveTo(x-r,y+0.6*r);
+        ctx.lineTo(x-r,y);
+        ctx.bezierCurveTo(x-r,y-r+a,x+r,y-r+a,x+r,y);
+        ctx.lineTo(x+r,y+0.6*r);
+        ctx.quadraticCurveTo(x+r+move_step*0.4*r,y+r,x+0.6*r,y+0.6*r);
+        ctx.quadraticCurveTo(x+0.3*r+move_step*0.6*r,y+r,x,y+0.6*r);
+        ctx.quadraticCurveTo(x-0.3*r+move_step*0.6*r,y+r,x-0.6*r,y+0.6*r);
+        ctx.quadraticCurveTo(x-r+move_step*0.4*r,y+r,x-r,y+0.6*r);
+        ctx.fill();
+        //右眼
+        ctx.beginPath();
+        ctx.fillStyle = "white";
+        ctx.moveTo(x+0.2*r,y-0.2*r);
+        ctx.bezierCurveTo(x+0.2*r,y-0.6*r,x+0.65*r,y-0.6*r,x+0.65*r,y-0.2*r);
+        ctx.bezierCurveTo(x+0.65*r,y+0.2*r,x+0.2*r,y+0.2*r,x+0.2*r,y-0.2*r);
+        ctx.fill();
+        //左眼
+        ctx.moveTo(x-0.2*r,y-0.2*r);
+        ctx.bezierCurveTo(x-0.2*r,y-0.6*r,x-0.65*r,y-0.6*r,x-0.65*r,y-0.2*r);
+        ctx.bezierCurveTo(x-0.65*r,y+0.2*r,x-0.2*r,y+0.2*r,x-0.2*r,y-0.2*r);
+        ctx.fill();
+        //眼珠
+        dx = dx||0;
+        ctx.beginPath();
+        ctx.fillStyle = "blue";
+        ctx.arc(x+0.425*r+dx,y-0.2*r,0.1*r,0,2*pi,true);
+        ctx.arc(x-0.425*r+dx,y-0.2*r,0.1*r,0,2*pi,true);
+        ctx.fill();
+        // ctx.stroke();
+        // ctx.fillStyle = "red";
+        // ctx.fill();
+    }
+
+    const dot = (ctx,x,y)=>{
+        ctx.fillRect(x,y,0,0);
+    }
+    function draw() {
+        let canvas = document.getElementById('canvas');
+        const w = canvas.width;
+        const h = canvas.height;
+
+        if (canvas.getContext){
+            let ctx = canvas.getContext('2d');
+            ctx.clearRect(0,0, w, h);
+
+            //外围
+            roundedRect(ctx,500,250,498,248,12);
+            roundedRect(ctx,500,250,494,245,10);
+
+            //障碍
+            // for(let i=1;i<5;i++){
+            //     for (let j=1;j<5;j++){
+            //         roundedRect(ctx,95*i-35,95*j-35,40,40,10);
+            //     }
+            // }
+
+            //吃豆人
+            pac_man(ctx,500+position[0],position[1],position[2],position[3])
+
+
+            //
+            // for(let i=0;i<26;i++){
+            //     for (let j=0;j<7;j++){
+            //         ctx.fillRect(51+i*16,35+66*j,4,4);
+            //     }
+            //
+            // }
+            //
+            // for(let i=0;i<26;i++){
+            //     ctx.fillRect(115,51+i*16,4,4);
+            // }
+            //
+            //enemy
+
+            for(let i = 0;i<4;i++){
+                for(let j=0;j<4;j++){
+                    enemy(ctx,100*(1+i),100*(1+j),40);
+                }
+            }
+            // enemy(ctx,250,250,100);
+
+            window.requestAnimationFrame(draw);
+        }
+    }
+
+    // 封装的一个用于绘制圆角矩形的函数.
+
+    function roundedRect(ctx,x,y,a,b,r){
+        ctx.beginPath();
+        ctx.moveTo(x-a+r,y-b);
+        ctx.lineTo(x+a-r,y-b);
+        ctx.quadraticCurveTo(x+a,y-b,x+a,y-b+r);
+        ctx.lineTo(x+a,y+b-r);
+        ctx.quadraticCurveTo(x+a,y+b,x+a-r,y+b);
+        ctx.lineTo(x-a+r,y+b);
+        ctx.quadraticCurveTo(x-a,y+b,x-a,y+b-r);
+        ctx.lineTo(x-a,y-b+r);
+        ctx.quadraticCurveTo(x-a,y-b,x-a+r,y-b);
+        ctx.stroke();
+    }
+    draw();
+</script>
+</body>
+</html>
