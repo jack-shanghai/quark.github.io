@@ -1,7 +1,24 @@
-# jack-shanghai.github.io
-practise make perfect
+# antd-demo
 
-网站正在建设中……
+## Project setup
+```
+yarn install
+```
 
+### Compiles and hot-reloads for development
+```
+yarn serve
+```
 
-    曹达宏 2018/12/22
+### Compiles and minifies for production
+```
+yarn build
+```
+
+### Lints and fixes files
+```
+yarn lint
+```
+
+### Customize configuration
+See [Configuration Reference](https://cli.vuejs.org/config/).
