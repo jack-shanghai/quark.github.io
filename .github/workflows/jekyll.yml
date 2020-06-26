@@ -22,4 +22,4 @@ jobs:
       env:
         ACTIONS_DEPLOY_KEY: ${{ secrets.deploy_key }}
         PUBLISH_BRANCH: mater
-        PUBLISH_DIR: docs
+        PUBLISH_DIR: dist
